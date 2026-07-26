@@ -27,11 +27,15 @@ function riskRank(risk: OpportunityItem["risk"]) {
   return 3;
 }
 
-function kellyStake(bankroll: number, odd: number, probabilityPercent: number, fraction: number) {
-  const p = probabilityPercent / 100;
-  const b = odd - 1;
-  const q = 1 - p;
-  const rawKelly = ((b * p) - q) / b;
+function calculateKellyStakeAmount(bankroll: number, odd: number, probabilityPercent: number, fraction: number) {
+  if (!Number.isFinite(bankroll) || bankroll <= 0) return 0;
+  if (!Number.isFinite(odd) || odd <= 1.01) return 0;
+  if (!Number.isFinite(probabilityPercent) || probabilityPercent <= 0) return 0;
+
+  const probability = Math.min(0.99, Math.max(0.01, probabilityPercent / 100));
+  const oddsProfit = odd - 1;
+  const lossProbability = 1 - probability;
+  const rawKelly = ((oddsProfit * probability) - lossProbability) / oddsProfit;
   const adjusted = Math.max(0, rawKelly) * fraction;
   return bankroll * adjusted;
 }
@@ -52,7 +56,7 @@ export default function CompetitiveEdge() {
   const suggestedStake = topOpportunity
     ? Math.min(
       dailyLimit,
-      kellyStake(bankroll, topOpportunity.odd, topOpportunity.modelProbability, profileRules[profile].kellyFraction),
+      calculateKellyStakeAmount(bankroll, topOpportunity.odd, topOpportunity.modelProbability, profileRules[profile].kellyFraction),
     )
     : 0;
 
@@ -71,7 +75,7 @@ export default function CompetitiveEdge() {
                   : "bg-gray-800 text-gray-300 border-gray-700 hover:bg-gray-700"
               }`}
             >
-              Perfil {item}
+              Perfil {item.charAt(0).toUpperCase() + item.slice(1)}
             </button>
           ))}
         </div>

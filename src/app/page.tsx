@@ -69,7 +69,10 @@ export default function Home() {
               V2.0 PRO
             </div>
             {usingLiveData && (
-              <div className="text-xs bg-blue-500/20 text-blue-400 px-2 py-0.5 rounded-full border border-blue-500/30 font-semibold">
+              <div
+                className="text-xs bg-blue-500/20 text-blue-400 px-2 py-0.5 rounded-full border border-blue-500/30 font-semibold"
+                aria-label="Transmissão ao vivo ativa"
+              >
                 📡 AO VIVO
               </div>
             )}
@@ -119,7 +122,7 @@ export default function Home() {
                 }`}
               >
                 {m.homeTeam} {m.homeScore}–{m.awayScore} {m.awayTeam}{" "}
-                <span className="text-gray-400 font-normal">{m.minute}&#x2032;</span>
+                <span className="text-gray-400 font-normal">{m.minute} min</span>
               </button>
             ))}
           </div>
