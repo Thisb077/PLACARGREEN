@@ -1,0 +1,9 @@
+{
+  "framework": "nextjs",
+  "buildCommand": "npm run build",
+  "outputDirectory": ".next",
+  "env": {
+    "FOOTBALL_API_KEY": "@football_api_key",
+    "FOOTBALL_API_URL": "@football_api_url"
+  }
+}

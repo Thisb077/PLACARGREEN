@@ -3,6 +3,13 @@ import {
   Alert,
   SimulationResult,
   Market,
+  BettorProfile,
+  BacktestWindow,
+  ConfidenceMarket,
+  OpportunityItem,
+  ArbitrageItem,
+  TriggerPlan,
+  LeaguePredictability,
 } from "@/types";
 
 export const mockMatch: Match = {
@@ -459,6 +466,71 @@ export const mockSimulationResults: SimulationResult[] = [
   { outcome: "Over 2.5 Gols", probability: 74.4, count: 74400 },
   { outcome: "BTTS", probability: 78.6, count: 78600 },
   { outcome: "Flamengo marca primeiro", probability: 65.2, count: 65200 },
+];
+
+export const profileRules: Record<
+  BettorProfile,
+  { maxRisk: OpportunityItem["risk"]; minExpectedValue: number; kellyFraction: number }
+> = {
+  conservador: { maxRisk: "BAIXO", minExpectedValue: 4, kellyFraction: 0.2 },
+  moderado: { maxRisk: "MÉDIO", minExpectedValue: 2, kellyFraction: 0.35 },
+  agressivo: { maxRisk: "ALTO", minExpectedValue: 0, kellyFraction: 0.5 },
+};
+
+export const mockBacktests: BacktestWindow[] = [
+  { label: "30 dias", hitRate: 62.8, roi: 8.7, sampleSize: 241 },
+  { label: "90 dias", hitRate: 60.1, roi: 6.2, sampleSize: 769 },
+];
+
+export const mockConfidenceMarkets: ConfidenceMarket[] = [
+  { market: "Resultado 1X2", probability: 71, confidence: "ALTA" },
+  { market: "Over 2.5 gols", probability: 74, confidence: "ALTA" },
+  { market: "BTTS", probability: 78, confidence: "MÉDIA" },
+  { market: "Próximo gol", probability: 65, confidence: "MÉDIA" },
+  { market: "Escanteios", probability: 64, confidence: "BAIXA" },
+];
+
+export const mockOpportunities: OpportunityItem[] = [
+  { market: "Vitória Flamengo", odd: 1.95, impliedProbability: 51.3, modelProbability: 59.2, expectedValue: 15.4, risk: "BAIXO" },
+  { market: "Over 2.5 gols", odd: 1.72, impliedProbability: 58.1, modelProbability: 70.3, expectedValue: 20.9, risk: "BAIXO" },
+  { market: "BTTS", odd: 1.88, impliedProbability: 53.2, modelProbability: 63.8, expectedValue: 16.8, risk: "MÉDIO" },
+  { market: "Próximo gol Palmeiras", odd: 3.4, impliedProbability: 29.4, modelProbability: 34.1, expectedValue: 8.3, risk: "ALTO" },
+];
+
+export const mockMultichannelAlerts = [
+  { channel: "WhatsApp", priority: "Alta", value: "Over 2.5 com EV +20.9%" },
+  { channel: "Telegram", priority: "Média", value: "BTTS reforçado por pressão ofensiva" },
+  { channel: "Push", priority: "Alta", value: "Mudança de cenário: mercado de gols fortaleceu" },
+];
+
+export const mockExplainability = [
+  "xG combinado saltou de 2.1 para 2.8 nos últimos 15 minutos.",
+  "Pressão ofensiva subiu para 84/100 com 6 finalizações no alvo.",
+  "Odd da casa não ajustou totalmente a nova intensidade do jogo.",
+];
+
+export const mockArbitrage: ArbitrageItem[] = [
+  { market: "1X2 (Casa/Fora)", homeBook: "Casa A", awayBook: "Casa B", combinedProbability: 97.8, surebetMargin: 2.2 },
+  { market: "Over/Under 2.5", homeBook: "Casa C", awayBook: "Casa D", combinedProbability: 98.9, surebetMargin: 1.1 },
+];
+
+export const mockTriggerPlan: TriggerPlan[] = [
+  { phase: "Pré-jogo", trigger: "xG pré >= 1.6 e odd >= 1.90", action: "Preparar entrada parcial em Over 2.5" },
+  { phase: "Ao vivo", trigger: "Pressão > 75 por 5 min", action: "Completar stake em mercado de gols" },
+  { phase: "Ao vivo", trigger: "Volatilidade < 40 e ritmo cai", action: "Reduzir exposição e pausar novas entradas" },
+];
+
+export const mockApiEndpoints = [
+  { endpoint: "/api/signals", event: "market.opportunity" },
+  { endpoint: "/api/signals", event: "scenario.shift" },
+  { endpoint: "/api/signals", event: "surebet.detected" },
+];
+
+export const mockLeagueRanking: LeaguePredictability[] = [
+  { league: "Brasileirão Série A", predictability: 83, avgEv: 9.4 },
+  { league: "Premier League", predictability: 79, avgEv: 7.8 },
+  { league: "LaLiga", predictability: 77, avgEv: 7.1 },
+  { league: "Serie A", predictability: 74, avgEv: 6.5 },
 ];
 
 export function getScoreLabel(score: number): { label: string; color: string } {

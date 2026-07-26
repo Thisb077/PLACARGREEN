@@ -43,9 +43,22 @@ Cada mercado exibe: Probabilidade Pré-jogo, Ao Vivo, IA, Matemática, Estatíst
 ### 👤 Estatísticas de Jogadores
 - Para todos os jogadores: gols, assistências, finalizações, passes, desarmes, interceptações, faltas, cartões, dribles, defesas, nota, forma
 
-## 🛠️ Instalação
+## 🚀 Deploy na Vercel (recomendado)
+
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2FThisb077%2FPLACARGREEN&env=FOOTBALL_API_KEY&envDescription=Sua%20chave%20da%20API-Football%20(api-sports.io)&envLink=https%3A%2F%2Fwww.api-football.com%2F&project-name=placargreen&repository-name=PLACARGREEN)
+
+1. Clique no botão acima
+2. Conecte com o GitHub
+3. Preencha `FOOTBALL_API_KEY` com sua chave da [API-Football](https://www.api-football.com/)
+4. Clique em **Deploy** — o site fica no ar em ~2 minutos
+
+## 🛠️ Instalação local
 
 ```bash
+# 1. Copie o arquivo de variáveis de ambiente
+cp .env.example .env.local
+# 2. Preencha FOOTBALL_API_KEY no .env.local
+# 3. Instale as dependências e rode
 npm install
 npm run dev
 ```

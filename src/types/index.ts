@@ -141,3 +141,47 @@ export interface SimulationResult {
   probability: number;
   count: number;
 }
+
+export type BettorProfile = "conservador" | "moderado" | "agressivo";
+
+export interface BacktestWindow {
+  label: string;
+  hitRate: number;
+  roi: number;
+  sampleSize: number;
+}
+
+export interface ConfidenceMarket {
+  market: string;
+  probability: number;
+  confidence: "BAIXA" | "MÉDIA" | "ALTA";
+}
+
+export interface OpportunityItem {
+  market: string;
+  odd: number;
+  impliedProbability: number;
+  modelProbability: number;
+  expectedValue: number;
+  risk: "BAIXO" | "MÉDIO" | "ALTO";
+}
+
+export interface ArbitrageItem {
+  market: string;
+  homeBook: string;
+  awayBook: string;
+  combinedProbability: number;
+  surebetMargin: number;
+}
+
+export interface TriggerPlan {
+  phase: "Pré-jogo" | "Ao vivo";
+  trigger: string;
+  action: string;
+}
+
+export interface LeaguePredictability {
+  league: string;
+  predictability: number;
+  avgEv: number;
+}
