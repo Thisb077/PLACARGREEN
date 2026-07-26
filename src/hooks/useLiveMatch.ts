@@ -27,13 +27,12 @@ interface UseLiveMatchReturn {
 
 /**
  * Poll interval: 120 seconds.
- * API-Football free plan allows 100 requests/day. Each refresh of /api/live
- * uses 1 upstream request, and each /api/fixture/[id] fetch uses up to 3
- * (stats + events + lineups after the fixture call). With 120 s polling,
- * ~30 refreshes/hour × up to 4 upstream calls each = ~120 upstream
- * requests/hour — well above the free-plan daily budget. Consider reducing
- * the polling frequency or implementing server-side caching if you are on the
- * free plan with a single session in mind per day.
+ * API-Football free plan allows 100 requests/day. Each /api/fixture/[id]
+ * call makes up to 4 upstream requests (fixture check + stats + events +
+ * lineups). At 120 s intervals that is ~30 polls/hour × 4 upstream calls
+ * = ~120 upstream requests/hour, far exceeding the 100 req/day free-plan
+ * budget. Configure a longer POLL_INTERVAL_MS or add server-side caching
+ * when using the free tier.
  */
 const POLL_INTERVAL_MS = 120_000;
 

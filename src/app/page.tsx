@@ -99,6 +99,7 @@ export default function Home() {
             <span>|</span>
             <span>🤖 IA Ativa</span>
             <button
+              type="button"
               onClick={refresh}
               className="ml-1 text-gray-400 hover:text-white transition-colors"
               title="Atualizar dados"
