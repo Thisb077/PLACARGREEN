@@ -360,7 +360,7 @@ function buildSmartMarket(
       probability: drawP, odd: marketOdd(drawP),
       expectedValue: expectedValue(drawP, marketOdd(drawP)),
       confidence: Math.round(drawP * 70),
-      reason: 'Equipes equilibradas — Elo difference < 50',
+      reason: 'Equipes equilibradas — diferença de Elo < 50',
       riskLevel: 'Medium',
     },
     {
