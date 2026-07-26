@@ -93,7 +93,8 @@ function mapTeam(apiTeam: ApiFixtureItem["teams"]["home"]): Team {
   return {
     id: String(apiTeam.id),
     name: apiTeam.name,
-    shortName: apiTeam.name.length > 3 ? apiTeam.name.slice(0, 3).toUpperCase() : apiTeam.name.toUpperCase(),
+    // Always produce a 3-character abbreviation regardless of original length
+    shortName: apiTeam.name.slice(0, 3).toUpperCase(),
     logo: teamLogoEmoji(apiTeam.name),
     color: teamColor(apiTeam.id),
   };
@@ -217,6 +218,7 @@ function buildMomentumData(
     ).length;
 
     homeXG += homeGoals * 1.0 + (homeGoals === 0 ? 0.05 : 0);
+    // Slightly lower baseline for away team (0.03) to reflect home-field advantage
     awayXG += awayGoals * 1.0 + (awayGoals === 0 ? 0.03 : 0);
 
     // Simple momentum: 50 baseline, shifted by recent goal activity
@@ -300,11 +302,16 @@ function computeOdds(stats: LiveMatchStats, homeScore: number, awayScore: number
   const [homeXG, awayXG] = stats.xG;
   const totalXG = homeXG + awayXG || 1;
 
-  const homeWinProb = Math.min(0.85, Math.max(0.05, homeXG / totalXG * 0.7 + (homeScore > awayScore ? 0.2 : homeScore < awayScore ? -0.1 : 0)));
-  const awayWinProb = Math.min(0.85, Math.max(0.05, awayXG / totalXG * 0.7 + (awayScore > homeScore ? 0.2 : awayScore < homeScore ? -0.1 : 0)));
+  // Base win probability from xG share (70%), adjusted by current score (±10–20%)
+  const homeScoreBonus = homeScore > awayScore ? 0.2 : homeScore < awayScore ? -0.1 : 0;
+  const awayScoreBonus = awayScore > homeScore ? 0.2 : awayScore < homeScore ? -0.1 : 0;
+
+  const homeWinProb = Math.min(0.85, Math.max(0.05, (homeXG / totalXG) * 0.7 + homeScoreBonus));
+  const awayWinProb = Math.min(0.85, Math.max(0.05, (awayXG / totalXG) * 0.7 + awayScoreBonus));
   const drawProb = Math.max(0.05, 1 - homeWinProb - awayWinProb);
 
-  const margin = 1.08; // typical bookmaker margin
+  // 8% bookmaker overround — typical for main markets on major leagues
+  const margin = 1.08;
 
   return {
     homeWin: parseFloat((margin / homeWinProb).toFixed(2)),

@@ -119,7 +119,7 @@ export default function Home() {
                 }`}
               >
                 {m.homeTeam} {m.homeScore}–{m.awayScore} {m.awayTeam}{" "}
-                <span className="text-gray-400 font-normal">{m.minute}&apos;</span>
+                <span className="text-gray-400 font-normal">{m.minute}&#x2032;</span>
               </button>
             ))}
           </div>

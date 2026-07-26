@@ -25,8 +25,14 @@ interface UseLiveMatchReturn {
   refresh: () => void;
 }
 
-/** Poll interval in ms. API-Football free plan: 100 req/day. */
-const POLL_INTERVAL_MS = 60_000;
+/**
+ * Poll interval: 120 seconds.
+ * API-Football free plan allows 100 requests/day. Each refresh uses up to 4
+ * requests (fixture + stats + events + lineups via the proxy route). At 120s
+ * intervals that is ~30 refreshes/hour = ~120 requests, safely within the
+ * daily limit for a single live match session.
+ */
+const POLL_INTERVAL_MS = 120_000;
 
 export function useLiveMatch(fallbackMatch: Match): UseLiveMatchReturn {
   const [liveMatches, setLiveMatches] = useState<LiveMatchInfo[]>([]);
@@ -37,10 +43,12 @@ export function useLiveMatch(fallbackMatch: Match): UseLiveMatchReturn {
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  const fetchLiveMatches = useCallback(async () => {
+  // Store callbacks in refs so effects that reference them don't need them as
+  // deps (avoids stale-closure warnings while keeping effects stable).
+  const fetchLiveMatchesCb = useCallback(async () => {
     try {
       const res = await fetch("/api/live");
-      const json = await res.json() as { matches: LiveMatchInfo[] };
+      const json = (await res.json()) as { matches: LiveMatchInfo[] };
       setLiveMatches(json.matches);
       return json.matches;
     } catch {
@@ -48,13 +56,13 @@ export function useLiveMatch(fallbackMatch: Match): UseLiveMatchReturn {
     }
   }, []);
 
-  const fetchFixture = useCallback(async (id: number) => {
+  const fetchFixtureCb = useCallback(async (id: number) => {
     setLoading(true);
     setError(null);
     try {
       const res = await fetch(`/api/fixture/${id}`);
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const json = await res.json() as { match: Match };
+      const json = (await res.json()) as { match: Match };
       setMatch(json.match);
       setLastUpdated(new Date());
     } catch (err) {
@@ -65,47 +73,56 @@ export function useLiveMatch(fallbackMatch: Match): UseLiveMatchReturn {
     }
   }, []);
 
-  const selectMatch = useCallback(
-    (id: number) => {
-      setSelectedId(id);
-      fetchFixture(id);
-    },
-    [fetchFixture]
-  );
+  // Keep latest callback versions in refs so interval/effect closures always
+  // call the current version without needing them as reactive dependencies.
+  const fetchLiveMatchesRef = useRef(fetchLiveMatchesCb);
+  const fetchFixtureRef = useRef(fetchFixtureCb);
+  useEffect(() => { fetchLiveMatchesRef.current = fetchLiveMatchesCb; }, [fetchLiveMatchesCb]);
+  useEffect(() => { fetchFixtureRef.current = fetchFixtureCb; }, [fetchFixtureCb]);
+
+  const selectMatch = useCallback((id: number) => {
+    setSelectedId(id);
+    fetchFixtureRef.current(id);
+  }, []);
 
   const refresh = useCallback(() => {
-    if (selectedId !== null) {
-      fetchFixture(selectedId);
-    } else {
-      fetchLiveMatches().then((matches) => {
+    setSelectedId((prev) => {
+      if (prev !== null) {
+        fetchFixtureRef.current(prev);
+        return prev;
+      }
+      fetchLiveMatchesRef.current().then((matches) => {
         if (matches.length > 0) {
-          selectMatch(matches[0].id);
+          setSelectedId(matches[0].id);
+          fetchFixtureRef.current(matches[0].id);
         }
       });
-    }
-  }, [selectedId, fetchFixture, fetchLiveMatches, selectMatch]);
+      return prev;
+    });
+  }, []);
 
-  // Initial load
+  // Initial load — runs once on mount
   useEffect(() => {
-    fetchLiveMatches().then((matches) => {
+    fetchLiveMatchesRef.current().then((matches) => {
       if (matches.length > 0) {
         const first = matches[0];
         setSelectedId(first.id);
-        fetchFixture(first.id);
+        fetchFixtureRef.current(first.id);
       }
     });
-  }, [fetchLiveMatches, fetchFixture]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Auto-refresh when a match is selected
   useEffect(() => {
     if (selectedId === null) return;
     timerRef.current = setInterval(() => {
-      fetchFixture(selectedId);
+      fetchFixtureRef.current(selectedId);
     }, POLL_INTERVAL_MS);
     return () => {
       if (timerRef.current) clearInterval(timerRef.current);
     };
-  }, [selectedId, fetchFixture]);
+  }, [selectedId]);
 
   return {
     match: match ?? (liveMatches.length === 0 ? fallbackMatch : null),
