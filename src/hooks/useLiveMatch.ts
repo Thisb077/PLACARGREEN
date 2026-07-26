@@ -15,7 +15,7 @@ export interface LiveMatchInfo {
 }
 
 interface UseLiveMatchReturn {
-  match: Match | null;
+  match: Match;
   liveMatches: LiveMatchInfo[];
   selectedId: number | null;
   loading: boolean;
@@ -48,7 +48,12 @@ export function useLiveMatch(fallbackMatch: Match): UseLiveMatchReturn {
   const fetchLiveMatchesCb = useCallback(async () => {
     try {
       const res = await fetch("/api/live");
-      const json = (await res.json()) as { matches: LiveMatchInfo[] };
+      const json = (await res.json()) as { matches: LiveMatchInfo[]; error?: string };
+      if (!res.ok) {
+        // API error — return empty without overwriting existing list
+        console.warn("[useLiveMatch] /api/live returned", res.status, json.error);
+        return [];
+      }
       setLiveMatches(json.matches);
       return json.matches;
     } catch {
@@ -110,6 +115,8 @@ export function useLiveMatch(fallbackMatch: Match): UseLiveMatchReturn {
         fetchFixtureRef.current(first.id);
       }
     });
+    // Run once on mount; callbacks are accessed via refs (fetchLiveMatchesRef /
+    // fetchFixtureRef) to avoid stale closures — no reactive deps needed here.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -125,7 +132,8 @@ export function useLiveMatch(fallbackMatch: Match): UseLiveMatchReturn {
   }, [selectedId]);
 
   return {
-    match: match ?? (liveMatches.length === 0 ? fallbackMatch : null),
+    // Always fall back to fallbackMatch when match is null (initial load, error, no live games)
+    match: match ?? fallbackMatch,
     liveMatches,
     selectedId,
     loading,

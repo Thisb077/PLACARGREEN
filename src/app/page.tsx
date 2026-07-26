@@ -53,10 +53,8 @@ export default function Home() {
     refresh,
   } = useLiveMatch(mockMatch);
 
-  const usingLiveData = liveMatches.length > 0 && match !== null && match.id !== mockMatch.id;
-
-  // Use mock match as absolute fallback
-  const displayMatch = match ?? mockMatch;
+  // True when real live data is loaded (not the mock fallback)
+  const usingLiveData = liveMatches.length > 0 && match.id !== mockMatch.id;
 
   return (
     <div className="min-h-screen bg-gray-950 text-white">
@@ -137,7 +135,7 @@ export default function Home() {
 
       <div className="max-w-7xl mx-auto px-4 py-4">
         {/* Match Header - always visible */}
-        <MatchHeader match={displayMatch} />
+        <MatchHeader match={match} />
 
         {/* Smart Alerts - always visible */}
         <div className="mb-4">
@@ -166,25 +164,25 @@ export default function Home() {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
             <div className="lg:col-span-2 space-y-4">
               <LiveStats
-                stats={displayMatch.stats}
-                homeColor={displayMatch.homeTeam.color}
-                awayColor={displayMatch.awayTeam.color}
-                homeName={displayMatch.homeTeam.shortName}
-                awayName={displayMatch.awayTeam.shortName}
+                stats={match.stats}
+                homeColor={match.homeTeam.color}
+                awayColor={match.awayTeam.color}
+                homeName={match.homeTeam.shortName}
+                awayName={match.awayTeam.shortName}
               />
               <MatchTimeline
-                events={displayMatch.timeline}
-                homeColor={displayMatch.homeTeam.color}
-                awayColor={displayMatch.awayTeam.color}
+                events={match.timeline}
+                homeColor={match.homeTeam.color}
+                awayColor={match.awayTeam.color}
               />
             </div>
             <div className="space-y-4">
               <AIEngine
-                ai={displayMatch.ai}
-                homeName={displayMatch.homeTeam.name}
-                awayName={displayMatch.awayTeam.name}
-                homeColor={displayMatch.homeTeam.color}
-                awayColor={displayMatch.awayTeam.color}
+                ai={match.ai}
+                homeName={match.homeTeam.name}
+                awayName={match.awayTeam.name}
+                homeColor={match.homeTeam.color}
+                awayColor={match.awayTeam.color}
               />
             </div>
           </div>
@@ -230,11 +228,11 @@ export default function Home() {
         {activeTab === "ia" && (
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
             <AIEngine
-              ai={displayMatch.ai}
-              homeName={displayMatch.homeTeam.name}
-              awayName={displayMatch.awayTeam.name}
-              homeColor={displayMatch.homeTeam.color}
-              awayColor={displayMatch.awayTeam.color}
+              ai={match.ai}
+              homeName={match.homeTeam.name}
+              awayName={match.awayTeam.name}
+              homeColor={match.homeTeam.color}
+              awayColor={match.awayTeam.color}
             />
             <SmartMarket />
           </div>
@@ -243,23 +241,23 @@ export default function Home() {
         {/* Charts Tab */}
         {activeTab === "graficos" && (
           <Charts
-            momentumData={displayMatch.momentumData}
-            homeColor={displayMatch.homeTeam.color}
-            awayColor={displayMatch.awayTeam.color}
-            homeName={displayMatch.homeTeam.name}
-            awayName={displayMatch.awayTeam.name}
+            momentumData={match.momentumData}
+            homeColor={match.homeTeam.color}
+            awayColor={match.awayTeam.color}
+            homeName={match.homeTeam.name}
+            awayName={match.awayTeam.name}
           />
         )}
 
         {/* Players Tab */}
         {activeTab === "jogadores" && (
           <PlayerStats
-            homePlayers={displayMatch.homePlayers}
-            awayPlayers={displayMatch.awayPlayers}
-            homeTeamName={displayMatch.homeTeam.name}
-            awayTeamName={displayMatch.awayTeam.name}
-            homeColor={displayMatch.homeTeam.color}
-            awayColor={displayMatch.awayTeam.color}
+            homePlayers={match.homePlayers}
+            awayPlayers={match.awayPlayers}
+            homeTeamName={match.homeTeam.name}
+            awayTeamName={match.awayTeam.name}
+            homeColor={match.homeTeam.color}
+            awayColor={match.awayTeam.color}
           />
         )}
 

@@ -21,6 +21,10 @@ export async function GET() {
     return NextResponse.json({ matches });
   } catch (err) {
     console.error("[/api/live]", err);
-    return NextResponse.json({ matches: [] }, { status: 200 });
+    // Return 503 so the client can distinguish an API error from "no live matches"
+    return NextResponse.json(
+      { matches: [], error: "Não foi possível obter partidas ao vivo" },
+      { status: 503 }
+    );
   }
 }
