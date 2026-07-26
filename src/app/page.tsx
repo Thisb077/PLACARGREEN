@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
 import { mockMatch, mockResultMarkets, mockGoalMarkets, mockCornerMarkets, mockCardMarkets } from "@/lib/mockData";
+import { useLiveMatch } from "@/hooks/useLiveMatch";
 import MatchHeader from "@/components/dashboard/MatchHeader";
 import LiveStats from "@/components/dashboard/LiveStats";
 import MatchTimeline from "@/components/dashboard/MatchTimeline";
@@ -40,7 +41,22 @@ const marketTabs: { id: MarketTab; label: string }[] = [
 export default function Home() {
   const [activeTab, setActiveTab] = useState<Tab>("dashboard");
   const [activeMarket, setActiveMarket] = useState<MarketTab>("resultado");
-  const match = mockMatch;
+
+  const {
+    match,
+    liveMatches,
+    selectedId,
+    loading,
+    error,
+    lastUpdated,
+    selectMatch,
+    refresh,
+  } = useLiveMatch(mockMatch);
+
+  const usingLiveData = liveMatches.length > 0 && match !== null && match.id !== mockMatch.id;
+
+  // Use mock match as absolute fallback
+  const displayMatch = match ?? mockMatch;
 
   return (
     <div className="min-h-screen bg-gray-950 text-white">
@@ -52,23 +68,76 @@ export default function Home() {
             <div className="text-xs bg-green-500/20 text-green-400 px-2 py-0.5 rounded-full border border-green-500/30 font-semibold">
               V2.0 PRO
             </div>
+            {usingLiveData && (
+              <div className="text-xs bg-blue-500/20 text-blue-400 px-2 py-0.5 rounded-full border border-blue-500/30 font-semibold">
+                📡 AO VIVO
+              </div>
+            )}
           </div>
           <div className="flex items-center gap-2 text-xs text-gray-400">
-            <span className="flex items-center gap-1">
-              <span className="w-1.5 h-1.5 bg-green-400 rounded-full animate-pulse"></span>
-              Ao Vivo
-            </span>
+            {loading && (
+              <span className="flex items-center gap-1 text-yellow-400">
+                <span className="w-1.5 h-1.5 bg-yellow-400 rounded-full animate-pulse"></span>
+                Atualizando...
+              </span>
+            )}
+            {!loading && (
+              <span className="flex items-center gap-1">
+                <span className={`w-1.5 h-1.5 rounded-full animate-pulse ${usingLiveData ? "bg-green-400" : "bg-orange-400"}`}></span>
+                {usingLiveData ? "Ao Vivo" : "Demo"}
+              </span>
+            )}
+            {lastUpdated && (
+              <>
+                <span>|</span>
+                <span>🕒 {lastUpdated.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit", second: "2-digit" })}</span>
+              </>
+            )}
             <span>|</span>
             <span>🤖 IA Ativa</span>
-            <span>|</span>
-            <span>📡 Dados em tempo real</span>
+            <button
+              onClick={refresh}
+              className="ml-1 text-gray-400 hover:text-white transition-colors"
+              title="Atualizar dados"
+            >
+              🔄
+            </button>
           </div>
         </div>
+
+        {/* Live match selector — shown when multiple live games exist */}
+        {liveMatches.length > 1 && (
+          <div className="max-w-7xl mx-auto px-4 pb-2 flex gap-2 overflow-x-auto">
+            {liveMatches.map((m) => (
+              <button
+                key={m.id}
+                onClick={() => selectMatch(m.id)}
+                className={`flex-shrink-0 text-xs px-3 py-1.5 rounded-lg border transition-all font-semibold ${
+                  selectedId === m.id
+                    ? "bg-green-500 text-black border-green-500"
+                    : "bg-gray-800 text-gray-300 border-gray-700 hover:bg-gray-700"
+                }`}
+              >
+                {m.homeTeam} {m.homeScore}–{m.awayScore} {m.awayTeam}{" "}
+                <span className="text-gray-400 font-normal">{m.minute}&apos;</span>
+              </button>
+            ))}
+          </div>
+        )}
+
+        {/* Error banner */}
+        {error && (
+          <div className="max-w-7xl mx-auto px-4 pb-2">
+            <div className="text-xs text-red-400 bg-red-500/10 border border-red-500/30 rounded-lg px-3 py-1.5">
+              ⚠️ {error} — exibindo dados de demonstração
+            </div>
+          </div>
+        )}
       </header>
 
       <div className="max-w-7xl mx-auto px-4 py-4">
         {/* Match Header - always visible */}
-        <MatchHeader match={match} />
+        <MatchHeader match={displayMatch} />
 
         {/* Smart Alerts - always visible */}
         <div className="mb-4">
@@ -97,25 +166,25 @@ export default function Home() {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
             <div className="lg:col-span-2 space-y-4">
               <LiveStats
-                stats={match.stats}
-                homeColor={match.homeTeam.color}
-                awayColor={match.awayTeam.color}
-                homeName={match.homeTeam.shortName}
-                awayName={match.awayTeam.shortName}
+                stats={displayMatch.stats}
+                homeColor={displayMatch.homeTeam.color}
+                awayColor={displayMatch.awayTeam.color}
+                homeName={displayMatch.homeTeam.shortName}
+                awayName={displayMatch.awayTeam.shortName}
               />
               <MatchTimeline
-                events={match.timeline}
-                homeColor={match.homeTeam.color}
-                awayColor={match.awayTeam.color}
+                events={displayMatch.timeline}
+                homeColor={displayMatch.homeTeam.color}
+                awayColor={displayMatch.awayTeam.color}
               />
             </div>
             <div className="space-y-4">
               <AIEngine
-                ai={match.ai}
-                homeName={match.homeTeam.name}
-                awayName={match.awayTeam.name}
-                homeColor={match.homeTeam.color}
-                awayColor={match.awayTeam.color}
+                ai={displayMatch.ai}
+                homeName={displayMatch.homeTeam.name}
+                awayName={displayMatch.awayTeam.name}
+                homeColor={displayMatch.homeTeam.color}
+                awayColor={displayMatch.awayTeam.color}
               />
             </div>
           </div>
@@ -161,11 +230,11 @@ export default function Home() {
         {activeTab === "ia" && (
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
             <AIEngine
-              ai={match.ai}
-              homeName={match.homeTeam.name}
-              awayName={match.awayTeam.name}
-              homeColor={match.homeTeam.color}
-              awayColor={match.awayTeam.color}
+              ai={displayMatch.ai}
+              homeName={displayMatch.homeTeam.name}
+              awayName={displayMatch.awayTeam.name}
+              homeColor={displayMatch.homeTeam.color}
+              awayColor={displayMatch.awayTeam.color}
             />
             <SmartMarket />
           </div>
@@ -174,23 +243,23 @@ export default function Home() {
         {/* Charts Tab */}
         {activeTab === "graficos" && (
           <Charts
-            momentumData={match.momentumData}
-            homeColor={match.homeTeam.color}
-            awayColor={match.awayTeam.color}
-            homeName={match.homeTeam.name}
-            awayName={match.awayTeam.name}
+            momentumData={displayMatch.momentumData}
+            homeColor={displayMatch.homeTeam.color}
+            awayColor={displayMatch.awayTeam.color}
+            homeName={displayMatch.homeTeam.name}
+            awayName={displayMatch.awayTeam.name}
           />
         )}
 
         {/* Players Tab */}
         {activeTab === "jogadores" && (
           <PlayerStats
-            homePlayers={match.homePlayers}
-            awayPlayers={match.awayPlayers}
-            homeTeamName={match.homeTeam.name}
-            awayTeamName={match.awayTeam.name}
-            homeColor={match.homeTeam.color}
-            awayColor={match.awayTeam.color}
+            homePlayers={displayMatch.homePlayers}
+            awayPlayers={displayMatch.awayPlayers}
+            homeTeamName={displayMatch.homeTeam.name}
+            awayTeamName={displayMatch.awayTeam.name}
+            homeColor={displayMatch.homeTeam.color}
+            awayColor={displayMatch.awayTeam.color}
           />
         )}
 
