@@ -14,8 +14,9 @@ import Charts from "@/components/charts/Charts";
 import AIEngine from "@/components/ai/AIEngine";
 import Simulations from "@/components/ai/Simulations";
 import SmartAlerts from "@/components/alerts/SmartAlerts";
+import CompetitiveEdge from "@/components/edge/CompetitiveEdge";
 
-type Tab = "dashboard" | "mercados" | "ia" | "graficos" | "jogadores" | "simulacoes";
+type Tab = "dashboard" | "mercados" | "ia" | "graficos" | "jogadores" | "simulacoes" | "vantagens";
 
 const tabs: { id: Tab; label: string; icon: string }[] = [
   { id: "dashboard", label: "Dashboard", icon: "🏠" },
@@ -24,6 +25,7 @@ const tabs: { id: Tab; label: string; icon: string }[] = [
   { id: "graficos", label: "Gráficos", icon: "📊" },
   { id: "jogadores", label: "Jogadores", icon: "👤" },
   { id: "simulacoes", label: "Simulações", icon: "🎲" },
+  { id: "vantagens", label: "Vantagens", icon: "🚀" },
 ];
 
 type MarketTab = "resultado" | "gols" | "escanteios" | "cartoes" | "placar" | "tempo" | "inteligente";
@@ -268,6 +270,9 @@ export default function Home() {
             <ExactScoreMarket />
           </div>
         )}
+
+        {/* Competitive Edge Tab */}
+        {activeTab === "vantagens" && <CompetitiveEdge />}
       </div>
     </div>
   );
