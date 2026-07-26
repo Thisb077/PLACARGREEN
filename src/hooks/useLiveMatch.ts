@@ -27,10 +27,13 @@ interface UseLiveMatchReturn {
 
 /**
  * Poll interval: 120 seconds.
- * API-Football free plan allows 100 requests/day. Each refresh uses up to 4
- * requests (fixture + stats + events + lineups via the proxy route). At 120s
- * intervals that is ~30 refreshes/hour = ~120 requests, safely within the
- * daily limit for a single live match session.
+ * API-Football free plan allows 100 requests/day. Each refresh of /api/live
+ * uses 1 upstream request, and each /api/fixture/[id] fetch uses up to 3
+ * (stats + events + lineups after the fixture call). With 120 s polling,
+ * ~30 refreshes/hour × up to 4 upstream calls each = ~120 upstream
+ * requests/hour — well above the free-plan daily budget. Consider reducing
+ * the polling frequency or implementing server-side caching if you are on the
+ * free plan with a single session in mind per day.
  */
 const POLL_INTERVAL_MS = 120_000;
 
@@ -50,8 +53,10 @@ export function useLiveMatch(fallbackMatch: Match): UseLiveMatchReturn {
       const res = await fetch("/api/live");
       const json = (await res.json()) as { matches: LiveMatchInfo[]; error?: string };
       if (!res.ok) {
-        // API error — return empty without overwriting existing list
+        // API error — surface it and return empty without overwriting existing list
+        const message = json.error ?? `Erro ${res.status} ao buscar partidas ao vivo`;
         console.warn("[useLiveMatch] /api/live returned", res.status, json.error);
+        setError(message);
         return [];
       }
       setLiveMatches(json.matches);
@@ -66,7 +71,16 @@ export function useLiveMatch(fallbackMatch: Match): UseLiveMatchReturn {
     setError(null);
     try {
       const res = await fetch(`/api/fixture/${id}`);
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      if (!res.ok) {
+        let message = `HTTP ${res.status}`;
+        try {
+          const json = (await res.json()) as { error?: string };
+          if (json.error) message = json.error;
+        } catch {
+          // ignore JSON parse failure; keep the HTTP status message
+        }
+        throw new Error(message);
+      }
       const json = (await res.json()) as { match: Match };
       setMatch(json.match);
       setLastUpdated(new Date());

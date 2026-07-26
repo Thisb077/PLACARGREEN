@@ -102,6 +102,7 @@ export default function Home() {
               onClick={refresh}
               className="ml-1 text-gray-400 hover:text-white transition-colors"
               title="Atualizar dados"
+              aria-label="Atualizar dados"
             >
               🔄
             </button>

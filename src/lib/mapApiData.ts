@@ -137,7 +137,7 @@ function mapEvents(
   homeTeamId: number
 ): TimelineEvent[] {
   return events
-    .filter((e) => ["Goal", "Card", "subst", "Var"].includes(e.type))
+    .filter((e) => ["Goal", "Card", "subst"].includes(e.type))
     .map((e): TimelineEvent => {
       const team: "home" | "away" = e.team.id === homeTeamId ? "home" : "away";
       let type: TimelineEvent["type"] = "corner";
@@ -268,8 +268,9 @@ function computeAI(
 
   const confidence = Math.min(95, Math.round(50 + Math.abs(homeXG - awayXG) * 15 + elapsed * 0.3));
 
-  const homeWinProb = favorite === "home" ? 0.55 + (homeXG - awayXG) * 0.1 : 0.35;
-  const fairOdds = homeWinProb > 0 ? 1 / homeWinProb : 3;
+  const rawHomeWinProb = favorite === "home" ? 0.55 + (homeXG - awayXG) * 0.1 : 0.35;
+  const homeWinProb = Math.min(0.99, Math.max(0.01, rawHomeWinProb));
+  const fairOdds = 1 / homeWinProb;
   const marketOdds = fairOdds * 0.9; // typical margin
   const ev = parseFloat(((marketOdds / fairOdds - 1) * 100).toFixed(1));
 

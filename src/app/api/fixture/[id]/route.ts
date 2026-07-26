@@ -21,17 +21,19 @@ export async function GET(
   }
 
   try {
-    // Fetch all data in parallel
-    const [fixture, statistics, events, lineups] = await Promise.all([
-      getFixture(fixtureId),
-      getFixtureStatistics(fixtureId),
-      getFixtureEvents(fixtureId),
-      getFixtureLineups(fixtureId),
-    ]);
+    // Fetch the fixture first; only fetch supporting data if the fixture exists
+    const fixture = await getFixture(fixtureId);
 
     if (!fixture) {
       return NextResponse.json({ error: "Partida não encontrada" }, { status: 404 });
     }
+
+    // Fixture confirmed — fetch remaining data in parallel
+    const [statistics, events, lineups] = await Promise.all([
+      getFixtureStatistics(fixtureId),
+      getFixtureEvents(fixtureId),
+      getFixtureLineups(fixtureId),
+    ]);
 
     const match = mapApiFixtureToMatch({ fixture, statistics, events, lineups });
     return NextResponse.json({ match });
@@ -40,3 +42,4 @@ export async function GET(
     return NextResponse.json({ error: "Erro ao buscar dados da partida" }, { status: 500 });
   }
 }
+

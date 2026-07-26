@@ -2,6 +2,12 @@ const BASE_URL = process.env.FOOTBALL_API_URL ?? "https://v3.football.api-sports
 const API_KEY = process.env.FOOTBALL_API_KEY ?? "";
 
 async function fetchApi<T>(path: string): Promise<T> {
+  if (!API_KEY) {
+    throw new Error(
+      "FOOTBALL_API_KEY is not configured. Set it in .env.local before using the API proxy."
+    );
+  }
+
   const res = await fetch(`${BASE_URL}${path}`, {
     headers: {
       "x-apisports-key": API_KEY,
