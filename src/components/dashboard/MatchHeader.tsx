@@ -57,7 +57,7 @@ export default function MatchHeader({ match }: Props) {
             {match.status === "LIVE" && (
               <span className="flex items-center gap-1">
                 <span className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></span>
-                <span className="text-red-400 font-bold text-sm">{match.minute}&apos;</span>
+                <span className="text-red-400 font-bold text-sm">{match.minute}{"'"}</span>
               </span>
             )}
             <span className="text-gray-400 text-xs">{match.status}</span>

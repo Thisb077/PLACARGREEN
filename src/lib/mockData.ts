@@ -461,15 +461,6 @@ export const mockSimulationResults: SimulationResult[] = [
   { outcome: "Flamengo marca primeiro", probability: 65.2, count: 65200 },
 ];
 
-export const scoreLabels: Record<number, { label: string; color: string }> = {
-  90: { label: "MUITO FORTE", color: "text-emerald-400" },
-  80: { label: "FORTE", color: "text-green-400" },
-  70: { label: "BOM", color: "text-yellow-400" },
-  60: { label: "MODERADO", color: "text-orange-400" },
-  40: { label: "FRACO", color: "text-red-400" },
-  0: { label: "EVITAR", color: "text-red-600" },
-};
-
 export function getScoreLabel(score: number): { label: string; color: string } {
   if (score >= 90) return { label: "MUITO FORTE", color: "text-emerald-400" };
   if (score >= 80) return { label: "FORTE", color: "text-green-400" };

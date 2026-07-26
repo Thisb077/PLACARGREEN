@@ -59,7 +59,7 @@ export default function MatchTimeline({ events, homeColor, awayColor }: Props) {
                     color: event.type === "goal" ? "#000" : "#fff",
                   }}
                 >
-                  {event.minute}&apos;
+                  {event.minute}{"'"}
                 </div>
               </div>
 
